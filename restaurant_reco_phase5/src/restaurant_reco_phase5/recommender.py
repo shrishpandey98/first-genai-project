@@ -63,6 +63,17 @@ def _apply_filters(df: pd.DataFrame, req: RecommendationRequest) -> Tuple[pd.Dat
     return out, filters_applied
 
 
+def _parse_cuisines(c) -> List[str]:
+    if c is None:
+        return []
+    if isinstance(c, str):
+        return [x.strip() for x in c.split(",")]
+    try:
+        return [str(x).strip() for x in c]
+    except TypeError:
+        return []
+
+
 def recommend(
     *,
     restaurants: pd.DataFrame,
@@ -93,7 +104,7 @@ def recommend(
             loc = str(row["location"])
             addr = str(row["address"])
             name = str(row["name"])
-            cuisines = " ".join(list(row["cuisines"]) if row["cuisines"] is not None else [])
+            cuisines = " ".join(_parse_cuisines(row["cuisines"]))
             documents.append(f"{name} {cuisines} {loc} {addr}")
             
         semantic_scores = compute_semantic_scores(request.free_text, documents)
@@ -109,7 +120,7 @@ def recommend(
             votes=(None if pd.isna(row["votes"]) else int(row["votes"])),
             cost_for_two=(None if pd.isna(row["cost_for_two"]) else int(row["cost_for_two"])),
             restaurant_location=str(row["location"]),
-            restaurant_cuisines=list(row["cuisines"]) if row["cuisines"] is not None else [],
+            restaurant_cuisines=_parse_cuisines(row["cuisines"]),
             semantic_score=s_score,
             weights=weights,
         )
@@ -133,7 +144,7 @@ def recommend(
             name=str(row["name"]),
             address=str(row["address"]),
             location=str(row["location"]),
-            cuisines=list(row["cuisines"]) if row["cuisines"] is not None else [],
+            cuisines=_parse_cuisines(row["cuisines"]),
             rating=(None if pd.isna(row["rating"]) else float(row["rating"])),
             votes=(None if pd.isna(row["votes"]) else int(row["votes"])),
             cost_for_two=(None if pd.isna(row["cost_for_two"]) else int(row["cost_for_two"])),

@@ -37,8 +37,8 @@ def compute_semantic_scores(query: str, documents: List[str]) -> List[float]:
         # Compute cosine similarity
         sims = cosine_similarity(query_emb, doc_embs)[0]
         
-        # Normalize from [-1, 1] to [0, 1] for our scoring formula
-        normalized_sims = [(s + 1.0) / 2.0 for s in sims]
+        # Clamp negative similarities to 0 to heavily penalize irrelevant docs
+        normalized_sims = [max(0.0, float(s)) for s in sims]
         return normalized_sims
         
     except Exception as e:

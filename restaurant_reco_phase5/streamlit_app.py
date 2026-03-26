@@ -160,13 +160,15 @@ def get_available_cuisines(df: pd.DataFrame) -> List[str]:
     # Flatten all cuisines
     all_cuisines = set()
     for row in df["cuisines"].dropna():
-        # Usually it's a list or a comma-separated string depending on parquet schema
-        if isinstance(row, list):
-            for c in row:
-                all_cuisines.add(c.strip())
-        elif isinstance(row, str):
+        if isinstance(row, str):
             for c in row.split(","):
                 all_cuisines.add(c.strip())
+        else:
+            try:
+                for c in row:
+                    all_cuisines.add(str(c).strip())
+            except TypeError:
+                pass
     return sorted(list(all_cuisines))
 
 # Helper function to get available locations
@@ -248,10 +250,26 @@ def main():
             debug=debug_mode
         )
         
+        try:
+            from src.restaurant_reco_phase5.scoring import ScoringWeights
+        except ImportError:
+            from restaurant_reco_phase5.scoring import ScoringWeights
+            
+        custom_weights = ScoringWeights()
+        if req.free_text:
+            custom_weights = ScoringWeights(
+                semantic_match=0.40,
+                rating=0.20,
+                cuisine_match=0.10,
+                votes=0.05,
+                budget_fit=0.15,
+                location_match=0.10
+            )
+        
         with st.spinner("🧠 Analyzing and finding the perfect spots..."):
             try:
                 start_ts = time.time()
-                resp = recommend(restaurants=df, request=req)
+                resp = recommend(restaurants=df, request=req, weights=custom_weights)
                 end_ts = time.time()
                 
                 # Show results
