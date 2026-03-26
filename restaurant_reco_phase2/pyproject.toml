@@ -1,0 +1,25 @@
+ [build-system]
+ requires = ["setuptools>=70", "wheel"]
+ build-backend = "setuptools.build_meta"
+ 
+ [project]
+ name = "restaurant-reco-phase2"
+ version = "0.1.0"
+ description = "Phase 2 deterministic restaurant recommender (filter + rank + JSON response)."
+ readme = "README.md"
+ requires-python = ">=3.9"
+ dependencies = [
+   "pandas==2.2.3",
+   "pyarrow==16.1.0",
+   "pydantic==2.9.2",
+ ]
+ 
+ [project.optional-dependencies]
+ dev = [
+   "pytest==8.4.2",
+ ]
+ 
+ [tool.pytest.ini_options]
+ testpaths = ["tests"]
+ addopts = "-q"
+ 
