@@ -177,6 +177,23 @@ def get_available_locations(df: pd.DataFrame) -> List[str]:
     return sorted(df["location"].dropna().unique().tolist())
 
 
+def reset_filters():
+    for key, val in {
+        "place": "",
+        "cuisines": [],
+        "use_budget": False,
+        "budget_min": 0,
+        "budget_max": 2000,
+        "min_rating": 4.0,
+        "online_order": False,
+        "book_table": False,
+        "top_n": 5,
+        "debug_mode": False,
+        "free_text": ""
+    }.items():
+        st.session_state[key] = val
+
+
 def main():
     st.markdown('<div class="main-header">🍽️ Flavorscape</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Discover your next favorite meal using AI-driven semantic recommendations.</div>', unsafe_allow_html=True)
@@ -194,36 +211,39 @@ def main():
     st.sidebar.markdown("### 🎯 **Your Preferences**")
     
     # Needs to be a valid place from our data
-    place = st.sidebar.selectbox("Neighborhood", [""] + locations, index=0)
+    place = st.sidebar.selectbox("Neighborhood", [""] + locations, index=0, key="place")
     
     st.sidebar.markdown("---")
     
-    cuisines = st.sidebar.multiselect("Cuisines", cuisines_list, placeholder="Select cuisines...")
+    cuisines = st.sidebar.multiselect("Cuisines", cuisines_list, placeholder="Select cuisines...", key="cuisines")
     
-    use_budget = st.sidebar.checkbox("Apply Budget Constraints?")
-    budget_min, budget_max = 0, 2000
+    use_budget = st.sidebar.checkbox("Apply Budget Constraints?", key="use_budget")
     if use_budget:
         cols = st.sidebar.columns(2)
-        budget_min = cols[0].number_input("Min Cost (₹)", min_value=0, max_value=10000, step=100, value=0)
-        budget_max = cols[1].number_input("Max Cost (₹)", min_value=0, max_value=10000, step=100, value=2000)
+        budget_min = cols[0].number_input("Min Cost (₹)", min_value=0, max_value=10000, step=100, key="budget_min")
+        budget_max = cols[1].number_input("Max Cost (₹)", min_value=0, max_value=10000, step=100, key="budget_max")
+    else:
+        budget_min, budget_max = 0, 2000
     
-    min_rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1)
+    min_rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1, key="min_rating")
     
     st.sidebar.markdown("---")
-    online_order = st.sidebar.checkbox("Must support Online Order", value=False)
-    book_table = st.sidebar.checkbox("Must support Table Booking", value=False)
+    online_order = st.sidebar.checkbox("Must support Online Order", key="online_order")
+    book_table = st.sidebar.checkbox("Must support Table Booking", key="book_table")
     
-    top_n = st.sidebar.slider("Number of Recommendations", 1, 20, 5)
+    top_n = st.sidebar.slider("Number of Recommendations", 1, 20, 5, key="top_n")
     
     st.sidebar.markdown("---")
     st.sidebar.caption("🔧 **Advanced Engine Options**")
-    debug_mode = st.sidebar.checkbox("Show Debug Stats")
+    debug_mode = st.sidebar.checkbox("Show Debug Stats", key="debug_mode")
 
     # Main area
     st.markdown("### 💬 Semantic Filters")
-    free_text = st.text_input("Looking for something specific?", placeholder="e.g., 'A cozy Italian place with great tiramisu perfect for a romantic date'")
+    free_text = st.text_input("Looking for something specific?", placeholder="e.g., 'A cozy Italian place with great tiramisu perfect for a romantic date'", key="free_text")
     
-    find_button = st.button("✨ Give me Recommendations", type="primary", use_container_width=True)
+    btn_cols = st.columns(2)
+    find_button = btn_cols[0].button("✨ Give me Recommendations", type="primary", use_container_width=True)
+    btn_cols[1].button("🔄 Reset Filters", on_click=reset_filters, use_container_width=True)
     
     if find_button:
         if not place:
