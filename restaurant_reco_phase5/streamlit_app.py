@@ -195,6 +195,19 @@ def reset_filters():
 
 
 def main():
+    if "place" not in st.session_state:
+        st.session_state["place"] = ""
+        st.session_state["cuisines"] = []
+        st.session_state["use_budget"] = False
+        st.session_state["budget_min"] = 0
+        st.session_state["budget_max"] = 2000
+        st.session_state["min_rating"] = 4.0
+        st.session_state["online_order"] = False
+        st.session_state["book_table"] = False
+        st.session_state["top_n"] = 5
+        st.session_state["debug_mode"] = False
+        st.session_state["free_text"] = ""
+
     st.markdown('<div class="main-header">🍽️ Flavorscape</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Discover your next favorite meal using AI-driven semantic recommendations.</div>', unsafe_allow_html=True)
 
@@ -211,7 +224,7 @@ def main():
     st.sidebar.markdown("### 🎯 **Your Preferences**")
     
     # Needs to be a valid place from our data
-    place = st.sidebar.selectbox("Neighborhood", [""] + locations, index=0, key="place")
+    place = st.sidebar.selectbox("Neighborhood", [""] + locations, key="place")
     
     st.sidebar.markdown("---")
     
@@ -225,13 +238,13 @@ def main():
     else:
         budget_min, budget_max = 0, 2000
     
-    min_rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, 4.0, 0.1, key="min_rating")
+    min_rating = st.sidebar.slider("Minimum Rating", 0.0, 5.0, step=0.1, key="min_rating")
     
     st.sidebar.markdown("---")
     online_order = st.sidebar.checkbox("Must support Online Order", key="online_order")
     book_table = st.sidebar.checkbox("Must support Table Booking", key="book_table")
     
-    top_n = st.sidebar.slider("Number of Recommendations", 1, 20, 5, key="top_n")
+    top_n = st.sidebar.slider("Number of Recommendations", 1, 20, key="top_n")
     
     st.sidebar.markdown("---")
     st.sidebar.caption("🔧 **Advanced Engine Options**")
