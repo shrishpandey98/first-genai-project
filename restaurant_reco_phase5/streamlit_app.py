@@ -144,7 +144,6 @@ def get_data() -> pd.DataFrame:
     
     for path in possible_paths:
         if path and os.path.exists(path):
-            st.toast(f"Loading data from {path}...")
             return load_restaurants_parquet(path)
             
     # If not found, attempt absolute relative paths
@@ -153,8 +152,7 @@ def get_data() -> pd.DataFrame:
     if os.path.exists(fallback_path):
         return load_restaurants_parquet(fallback_path)
         
-    st.error("Could not find the restaurants.parquet database. Please ensure the data ingestion phase was run.")
-    st.stop()
+    raise FileNotFoundError("Could not find the restaurants.parquet database. Please ensure the data ingestion phase was run.")
 
 # Helper function to get available cuisines
 @st.cache_data
@@ -181,7 +179,12 @@ def main():
     st.markdown('<div class="main-header">🍽️ Flavorscape</div>', unsafe_allow_html=True)
     st.markdown('<div class="sub-header">Discover your next favorite meal using AI-driven semantic recommendations.</div>', unsafe_allow_html=True)
 
-    df = get_data()
+    try:
+        df = get_data()
+    except FileNotFoundError as e:
+        st.error(str(e))
+        st.stop()
+        
     locations = get_available_locations(df)
     cuisines_list = get_available_cuisines(df)
     
